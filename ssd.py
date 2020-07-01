@@ -4,6 +4,7 @@ from model.net import vgg16
 from util.detector import *
 from util.prior import *
 from util.utils import *
+from util.process import *
 import numpy as np
 import time
 
@@ -20,6 +21,7 @@ class SSD(nn.Module):
 		self.detector = detector(cfg)
 
 		#nms
+		self.process = Process(cfg)
 
 		#prior anchors
 		self.prior = PriorBox(self.cfg)()
@@ -30,3 +32,9 @@ class SSD(nn.Module):
 		cls_logits, bbox_preds = self.detector(features)
 
 		return cls_logits, bbox_preds
+
+	def forward_with_nms(self, x):
+		cls_logits, bbox_preds = self.forward(x)
+		detections = self.process(cls_logits, bbox_preds)
+
+		return detections
